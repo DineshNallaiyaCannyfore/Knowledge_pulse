@@ -1,6 +1,12 @@
 from fastapi import FastAPI
+from app.db.database import Base, engine
+from app.api.router.file_handler_router import router as file_handler
 
 app = FastAPI()
+
+Base.metadata.create_all(bind=engine)
+
+app.include_router(file_handler)
 
 
 @app.get("/")
