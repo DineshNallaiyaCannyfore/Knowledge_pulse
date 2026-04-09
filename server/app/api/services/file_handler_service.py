@@ -3,8 +3,8 @@ from typing import List
 from fastapi import UploadFile
 from requests import Session
 from app.db.models import FileStorage
+from app.core.constants import FILE_DIRECTROY
 
-FILE_DIRECTROY = "public"
 os.makedirs(FILE_DIRECTROY, exist_ok=True)
 
 
@@ -19,4 +19,4 @@ def file_uploader(files: List[UploadFile], db: Session):
         db.add(insert_file)
         db.commit()
         db.refresh(insert_file)
-        return [{"message": "Successfully file uploaded."}]
+        return {"message": "Successfully file uploaded."}

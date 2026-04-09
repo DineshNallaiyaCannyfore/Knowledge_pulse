@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class FileHandlerSchema(BaseModel):
+class UploadResponseModel(BaseModel):
     message: str
