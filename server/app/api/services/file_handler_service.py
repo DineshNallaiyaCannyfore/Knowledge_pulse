@@ -32,11 +32,16 @@ async def file_uploader(files: List[UploadFile], db: Session):
             file_path=file_path,
         )
         try:
+            db.add(insert_file)
+            db.commit()
+            db.refresh(insert_file)
+            
             for i, chunk in enumerate(chunks):
                 db.add(
                     DocumentChunk(
                         content=chunk["content"],
                         embedding=embedded_text[i],
+                        file_id=insert_file.id,
                         extra_metadata={
                             "file_name": file.filename,
                             "chunk_id": i,
@@ -44,9 +49,7 @@ async def file_uploader(files: List[UploadFile], db: Session):
                         },
                     )
                 )
-            db.add(insert_file)
             db.commit()
-            db.refresh(insert_file)
         except IntegrityError:
             db.rollback()
             return {"message": "Duplicate data found"}
