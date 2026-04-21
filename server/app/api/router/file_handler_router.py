@@ -9,7 +9,7 @@ router = APIRouter(prefix="/files", tags=["fileupload"])
 
 
 @router.post("/upload", response_model=UploadResponseModel, status_code=201)
-def file_handler(
+async def file_handler(
     files: List[UploadFile] = File(...), db: Session = Depends(get_session)
 ):
-    return file_uploader(files, db)
+    return await file_uploader(files, db)
