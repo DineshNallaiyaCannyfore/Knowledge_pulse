@@ -4,15 +4,26 @@ import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
+import FileUpload from "primevue/fileupload";
 import { ref } from "vue";
 
 const visible = ref(false);
 
-const files = ref([
-  { file_name: "File 1" },
-  { file_name: "File 2" },
-  { file_name: "File 3" },
-]);
+const files = ref([]);
+
+const uploadUrl = import.meta.env.VITE_API_URL + "/files/upload";
+const fileListUrl = import.meta.env.VITE_API_URL + "/files/list";
+
+const fileList = async () => {
+  try {
+    const response = await fetch(fileListUrl);
+    const response_data = await response.json();
+    files.value = response_data;
+  } catch (e) {
+    console.error(e);
+  }
+};
+fileList();
 </script>
 <template>
   <Card>
@@ -32,11 +43,16 @@ const files = ref([
     :breakpoints="{ '1199px': '75vw', '575px': '90vw' }"
   >
     <div class="flex justify-end">
-      <Button
-        label="Upload new files"
-        severity="secondary"
-        icon="pi pi-plus"
-        iconPos="left"
+      <FileUpload
+        mode="basic"
+        name="files"
+        :url="uploadUrl"
+        accept=".pdf,.docx,.doc,.txt"
+        :maxFileSize="10000000"
+        :auto="true"
+        :multiple="true"
+        @click="fileList()"
+        chooseLabel="Upload File"
       />
     </div>
     <div>

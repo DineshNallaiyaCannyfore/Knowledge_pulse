@@ -96,4 +96,4 @@ def get_embedding(chunks):
 
 async def get_file_lists(db: Session):
     files = db.query(FileStorage).all()
-    return {"files": files}
+    return files
