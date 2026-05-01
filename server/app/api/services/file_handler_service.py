@@ -35,7 +35,7 @@ async def file_uploader(files: List[UploadFile], db: Session):
             db.add(insert_file)
             db.commit()
             db.refresh(insert_file)
-            
+
             for i, chunk in enumerate(chunks):
                 db.add(
                     DocumentChunk(
@@ -92,3 +92,8 @@ async def text_split(documents):
 
 def get_embedding(chunks):
     return embedding_model.embed_documents(chunks)
+
+
+async def get_file_lists(db: Session):
+    files = db.query(FileStorage).all()
+    return files

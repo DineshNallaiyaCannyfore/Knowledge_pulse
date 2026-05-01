@@ -1,11 +1,9 @@
 <script setup lang="ts">
-
+import NavBar from "./NavBar.vue";
 </script>
 
 <template>
   <section id="center">
-      <p>Knowledge Pulse</p>
+    <NavBar />
   </section>
-
-
 </template>
