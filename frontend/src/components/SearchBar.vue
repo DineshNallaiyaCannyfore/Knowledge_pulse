@@ -3,19 +3,10 @@ import { ref } from "vue";
 import Card from "primevue/card";
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
-
+import Skeleton from "primevue/skeleton";
 import { useToast } from "primevue/usetoast";
 import Toast from "primevue/toast";
 const toast = useToast();
-
-const show = () => {
-  toast.add({
-    severity: "info",
-    summary: "Info",
-    detail: "Message Content",
-    life: 3000,
-  });
-};
 
 interface SearchResult {
   request?: string;
@@ -25,9 +16,11 @@ interface SearchResult {
 const searchUrl = import.meta.env.VITE_API_URL + "/search/find";
 
 const searchQuery = ref("");
+const isLoading = ref(true);
 const searchResults = ref<SearchResult[]>([]);
 
 const performSearch = async () => {
+  isLoading.value = false;
   if (!searchQuery.value.trim()) return;
   try {
     searchResults.value.push({ request: searchQuery.value });
@@ -43,6 +36,8 @@ const performSearch = async () => {
     searchQuery.value = "";
   } catch (e) {
     console.error("Search error:", e);
+  } finally {
+    isLoading.value = true;
   }
 };
 
@@ -51,6 +46,13 @@ const handleKeyPress = (event: KeyboardEvent) => {
     if (searchQuery.value.trim()) {
       performSearch();
     } else {
+      console.log("Search query is empty.");
+      toast.add({
+        severity: "warn",
+        summary: "Warning",
+        detail: "Please enter a search query.",
+        life: 3000,
+      });
     }
   }
 };
@@ -98,6 +100,9 @@ const handleKeyPress = (event: KeyboardEvent) => {
               </template>
             </Card>
           </div>
+          <div v-if="!isLoading">
+            <Skeleton height="70px" width="700px" class="mb-2"></Skeleton>
+          </div>
         </div>
       </div>
     </div>
@@ -112,7 +117,6 @@ const handleKeyPress = (event: KeyboardEvent) => {
       <Button icon="pi pi-search" @click="performSearch" rounded class="ml-2" />
       <div class="card flex justify-center">
         <Toast />
-        <Button label="Show" @click="show()" />
       </div>
     </div>
   </div>

@@ -1,4 +1,5 @@
 import { createApp } from "vue";
+import { createPinia } from "pinia";
 import PrimeVue from "primevue/config";
 import "primeicons/primeicons.css";
 import Aura from "@primeuix/themes/aura";
@@ -12,4 +13,5 @@ app.use(PrimeVue, {
   },
 });
 app.use(ToastService);
+app.use(createPinia());
 app.mount("#app");
