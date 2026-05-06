@@ -16,12 +16,25 @@ interface SearchResult {
 const searchUrl = import.meta.env.VITE_API_URL + "/search/find";
 
 const searchQuery = ref("");
-const isLoading = ref(true);
+const isLoading = ref(false);
 const searchResults = ref<SearchResult[]>([]);
 
+const displayToast = (severity: string, summary: string, detail: string) => {
+  toast.add({
+    severity,
+    summary,
+    detail,
+    life: 3000,
+  });
+};
+
 const performSearch = async () => {
-  isLoading.value = false;
-  if (!searchQuery.value.trim()) return;
+  isLoading.value = true;
+  if (!searchQuery.value.trim()) {
+    isLoading.value = false;
+    displayToast("warn", "Warning", "Please enter a search query.");
+    return;
+  }
   try {
     searchResults.value.push({ request: searchQuery.value });
     const response = await fetch(searchUrl, {
@@ -36,8 +49,10 @@ const performSearch = async () => {
     searchQuery.value = "";
   } catch (e) {
     console.error("Search error:", e);
+    searchResults.value.pop();
+    displayToast("error", "Error", "Something went wrong. Please try again.");
   } finally {
-    isLoading.value = true;
+    isLoading.value = false;
   }
 };
 
@@ -46,13 +61,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
     if (searchQuery.value.trim()) {
       performSearch();
     } else {
-      console.log("Search query is empty.");
-      toast.add({
-        severity: "warn",
-        summary: "Warning",
-        detail: "Please enter a search query.",
-        life: 3000,
-      });
+      displayToast("warn", "Warning", "Please enter a search query.");
     }
   }
 };
@@ -100,7 +109,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
               </template>
             </Card>
           </div>
-          <div v-if="!isLoading">
+          <div v-if="isLoading">
             <Skeleton height="70px" width="700px" class="mb-2"></Skeleton>
           </div>
         </div>

@@ -36,7 +36,6 @@ def search_service(query, db):
         for r in results
         if r.file is not None
     ]
-
     llm_answer = send_to_llm(query, filtered_results)
     return llm_answer
 

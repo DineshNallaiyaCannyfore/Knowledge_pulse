@@ -10,7 +10,7 @@ from docx import Document
 from sqlalchemy.exc import IntegrityError
 from app.core.constants import FILE_DIRECTROY, PDF, MODEL_NAME, DOCX
 from app.db.models import FileStorage, DocumentChunk
-
+from pathlib import Path
 
 os.makedirs(FILE_DIRECTROY, exist_ok=True)
 
@@ -28,6 +28,12 @@ async def file_uploader(files: List[UploadFile], db: Session):
                 f.write(content)
 
             texts = await text_extraction(content, file.filename)
+            if "error" in texts:
+                errors.append(
+                    f"Error extracting text from {file.filename}: {texts['error']}"
+                )
+                return
+
             chunks = await text_split(texts)
             chunk_texts = [c["content"] for c in chunks]
             embedded_text = get_embedding(chunk_texts)
@@ -71,7 +77,10 @@ async def file_uploader(files: List[UploadFile], db: Session):
 
 async def text_extraction(content, filename):
     documents = []
-    file_format = filename.split(".")[1].lower()
+    file_format = Path(filename).suffix.lstrip(".").lower()
+
+    if not file_format:
+        return {"error": "File format could not be determined."}
 
     if file_format == PDF:
         reader = PdfReader(BytesIO(content))
