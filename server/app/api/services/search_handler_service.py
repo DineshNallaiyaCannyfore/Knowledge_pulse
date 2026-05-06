@@ -26,7 +26,7 @@ def search_service(query, db):
             select(DocumentChunk)
             .options(joinedload(DocumentChunk.file))
             .order_by(DocumentChunk.embedding.cosine_distance(query_embedding))
-            .limit(5)
+            .limit(3)
         )
         .scalars()
         .all()
@@ -36,7 +36,6 @@ def search_service(query, db):
         for r in results
         if r.file is not None
     ]
-
     llm_answer = send_to_llm(query, filtered_results)
     return llm_answer
 
@@ -61,33 +60,40 @@ def send_to_llm(query: str, search_results: list):
         {question}
 
         Instructions:
-        - Answer ONLY using the context.
-        - If not found, say: "The information is not available in the provided documents."
-        - Identify the correct source document from the context.
+            - Answer ONLY using the provided context.
+            - If the answer is not found, respond exactly:
+            "The information is not available in the provided documents."
+            - Do NOT make up information.
+            - Extract the correct source document name(s) from the context.
+            - If multiple documents are used, return them as an array.
+            - llm_answer must be a string and source_document must be an array of file names.
+            
+     
 
-        STRICT OUTPUT FORMAT (JSON):
-        {{
-        "llm_answer": "<final answer>",
-        "source_document": "<file name>"
-        }}
+            STRICT OUTPUT FORMAT (JSON ONLY):
+            {{
+            "llm_answer": "...",
+            "source_document": []
+            }}
 
-        Rules:
-        - Return ONLY valid JSON
-        - Do NOT add extra text
+            Rules:
+            - Return ONLY valid JSON
+            - Do NOT add any explanation or extra text
+            - Ensure JSON is properly formatted
+            - source_document MUST be an array (even for single file)
         """
     )
 
     try:
         chain = prompt | llm
         response = chain.invoke({"context": context, "question": query})
-        print("Raw LLM Response:", response)
         return json.loads(clean_llm_response(response.content.strip()))
 
     except Exception as e:
+        print("Error occurred:", e)
         return {
             "llm_answer": "Failed to generate answer",
-            "source_document": None,
-            "details": str(e),
+            "source_document": [],
         }
 
 
