@@ -102,9 +102,9 @@ def send_to_llm(query: str, search_results: list):
             }
 
     except Exception as e:
-        print(f"Error occurred: {type(e).__name__}: {e}")
+        print("Error occurred:", e)
         return {
-            "llm_answer": "Failed to generate answer. Please check Ollama is running.",
+            "llm_answer": "Failed to generate answer",
             "source_document": [],
         }
 
