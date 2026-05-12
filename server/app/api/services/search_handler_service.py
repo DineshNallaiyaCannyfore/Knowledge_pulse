@@ -1,4 +1,3 @@
-import os
 import re
 import json
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -7,14 +6,16 @@ from sqlalchemy.orm import joinedload
 from app.core.constants import MODEL_NAME
 from app.db.models import DocumentChunk
 from langchain.prompts import ChatPromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
-from dotenv import load_dotenv
+from langchain_ollama import OllamaLLM
 
-load_dotenv()
-API_KEY = os.getenv("GEN_AI_API_KEY")
-LLM = os.getenv("LLM_MODEL")
-os.environ["GOOGLE_API_KEY"] = API_KEY
-llm = ChatGoogleGenerativeAI(model=LLM)
+
+OLLAMA_CONFIG = {
+    "model": "llama3:8b",
+    "base_url": "http://localhost:11434",
+    "temperature": 0.3,
+}
+
+llm = OllamaLLM(**OLLAMA_CONFIG)
 
 embedding_model = HuggingFaceEmbeddings(model_name=MODEL_NAME)
 
@@ -87,7 +88,18 @@ def send_to_llm(query: str, search_results: list):
     try:
         chain = prompt | llm
         response = chain.invoke({"context": context, "question": query})
-        return json.loads(clean_llm_response(response.content.strip()))
+
+        response_text = response if isinstance(response, str) else response.content
+        response_text = response_text.strip()
+
+        try:
+            parsed_response = json.loads(clean_llm_response(response_text))
+            return parsed_response
+        except json.JSONDecodeError:
+            return {
+                "llm_answer": response_text,
+                "source_document": extract_sources_from_context(search_results),
+            }
 
     except Exception as e:
         print("Error occurred:", e)
@@ -99,5 +111,9 @@ def send_to_llm(query: str, search_results: list):
 
 def clean_llm_response(content: str):
     cleaned = re.sub(r"```json|```", "", content).strip()
-
     return cleaned
+
+
+def extract_sources_from_context(search_results: list):
+    sources = [r["file"] for r in search_results if "file" in r]
+    return list(set(sources))
