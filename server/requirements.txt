@@ -1,7 +1,6 @@
 sentence_transformers
 langchain-huggingface
 PyPDF2
-docx
 google-generativeai
 python-dotenv
 langchain
@@ -9,3 +8,10 @@ langchain-core
 langchain-community 
 langchain-google-genai
 langchain-ollama
+uvicorn
+psycopg2
+python-docx
+pgvector
+python-multipart
+python-dotenv
+sqlalchemy

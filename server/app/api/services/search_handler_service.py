@@ -5,8 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from app.core.constants import MODEL_NAME
 from app.db.models import DocumentChunk
-from langchain.prompts import ChatPromptTemplate
 from langchain_ollama import OllamaLLM
+from langchain_core.prompts import ChatPromptTemplate
 
 
 OLLAMA_CONFIG = {
@@ -27,7 +27,7 @@ def search_service(query, db):
             select(DocumentChunk)
             .options(joinedload(DocumentChunk.file))
             .order_by(DocumentChunk.embedding.cosine_distance(query_embedding))
-            .limit(3)
+            .limit(4)
         )
         .scalars()
         .all()
